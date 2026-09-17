@@ -1,0 +1,65 @@
+import { useMemo, useState } from 'react';
+import { ArrowLeft, ArrowRight, Dumbbell, EyeOff, Plane, Zap, ChevronRight } from 'lucide-react';
+
+const capsule='https://www.figma.com/api/mcp/asset/c4dd492e-bda6-4bea-b64d-86f47d211385/ee447.png';
+
+type Step='hero'|'power'|'emotion'|'admin'|'duration'|'quantity'|'recap';
+const steps=['Votre pouvoir','Votre émotion','Mode d’administration','Durée d’action','Quantité','Récapitulatif'];
+const screenByNode: Record<string,Step>={
+  '1-278':'hero','1-288':'power','1-370':'power','1-698':'power','1-452':'emotion','1-524':'admin','1-596':'duration','1-650':'quantity',
+  '1-245':'recap','1-81':'power','1-48':'power','1-59':'power','1-830':'power','1-804':'power','1-856':'power','1-779':'power','1-890':'power','1-889':'power',
+  '1-915':'power','1-151':'power','1-58':'power','1-182':'power','1-118':'power','1-70':'power','1-69':'power','1-878':'power','1-215':'power'
+};
+
+const powerOptions=[
+  {name:'Vitesse fulgurante',icon:Zap},{name:'Vol',icon:Plane},{name:'Force décuplée',icon:Dumbbell},{name:'Invisibilité',icon:EyeOff}
+];
+const emotions=['Zen','Énergisé','Concentré'];
+const admins=['Comprimé','Patch','Suppositoire'];
+
+function App(){
+  const query=new URLSearchParams(location.search);
+  const initialNode=query.get('node')?.replace(':','-')||'';
+  const initial=screenByNode[initialNode]||'hero';
+  const [step,setStep]=useState<Step>(initial);
+  const [mental,setMental]=useState(false);
+  const [power,setPower]=useState('Vol');
+  const [emotion,setEmotion]=useState('Confiant');
+  const [admin,setAdmin]=useState('Gélule');
+  const [duration,setDuration]=useState('1h');
+  const [quantity,setQuantity]=useState('Lot de 5');
+
+  const stepIndex=useMemo(()=>({power:0,emotion:1,admin:2,duration:3,quantity:4,recap:5,hero:-1}[step]),[step]);
+  const go=(s:Step)=>setStep(s);
+  if(step==='hero') return <Hero onPhysical={()=>{setMental(false);go('power')}} onMental={()=>{setMental(true);go('power')}}/>;
+
+  return <div className="app-shell">
+    <Header/>
+    <StepBar active={stepIndex}/>
+    {step==='power' && <PowerScreen mental={mental} setMental={setMental} power={power} setPower={setPower} onNext={()=>go('emotion')}/>} 
+    {step==='emotion' && <ChoiceScreen kind="emotion" title="Émotion" description="L'émotion conditionne la faculté. Choisir une émotion, c'est décider non pas de ce que la formule permet de faire, mais de l'état dans lequel on le fait. Une même capacité vécue dans le calme ou dans l'euphorie ne produit pas le même geste ni le même résultat." options={emotions} selected={emotion} setSelected={setEmotion} cardTitle="ÉMOTION SÉLECTIONNÉE" cardName="Confiant" cardCode="Co" cardText="Confiant, c'est l'état où le doute cesse de ralentir le geste. Ce n'est pas l'absence de risque ni l'euphorie qui ignore les obstacles, c'est la certitude tranquille que la faculté répondra quand on en aura besoin, sans avoir à se convaincre avant chaque usage." onBack={()=>go('power')} onNext={()=>go('admin')}/>} 
+    {step==='admin' && <ChoiceScreen kind="admin" title="Mode d’administration" description="Le mode d'administration décide comment la formule entre en jeu et à quel rythme. Un même effet peut arriver instantanément ou en trois quarts d'heure, se remarquer ou passer totalement inaperçu." options={admins} selected={admin} setSelected={setAdmin} cardTitle="MODE D’ADMINISTRATION SÉLECTIONNÉ" cardName="Gélule" cardCode="Ge" cardText="La gélule sublinguale est le mode le plus direct : elle fond sous la langue et laisse la formule entrer par la muqueuse, sans passer par la digestion. L'effet met une vingtaine de minutes à s'installer, mais une fois là, il est net." onBack={()=>go('emotion')} onNext={()=>go('duration')}/>} 
+    {step==='duration' && <DurationScreen duration={duration} setDuration={setDuration} onBack={()=>go('admin')} onNext={()=>go('quantity')}/>} 
+    {step==='quantity' && <QuantityScreen quantity={quantity} setQuantity={setQuantity} onBack={()=>go('duration')} onNext={()=>go('recap')}/>} 
+    {step==='recap' && <Recap power={power} emotion={emotion} admin={admin} duration={duration} quantity={quantity}/>} 
+  </div>
+}
+
+function Header(){return <div className="header"><div className="logo">FormuLab</div><div className="tagline">Créez votre superpouvoir</div></div>}
+function StepBar({active}:{active:number}){return <div className="steps">{steps.map((s,i)=><div key={s} className={'step'+(i===active?' active':'')}>{s}</div>)}</div>}
+function Capsule({hero=false}:{hero?:boolean}){return <div className={'capsule-wrap'+(hero?' hero':'')}><img src={capsule} className="capsule"/></div>}
+function Hero({onPhysical,onMental}:{onPhysical:()=>void,onMental:()=>void}){return <div className="hero-screen"><div className="hero-content"><Capsule hero/><h1>Dépassez le commun<br/>des mortels.</h1><p>Composez une pilule fictive à votre mesure : choisissez d’abord la famille de pouvoir, puis ajustez son émotion, sa durée et son mode d’administration.</p><div className="hero-actions"><button className="primary" onClick={onMental}>Pouvoirs mentaux</button><button className="primary" onClick={onPhysical}>Pouvoirs physiques</button></div></div></div>}
+function PowerScreen({mental,setMental,power,setPower,onNext}:{mental:boolean,setMental:(v:boolean)=>void,power:string,setPower:(v:string)=>void,onNext:()=>void}){
+  const title=mental?'Faculté mentale':'Faculté physique';
+  const description=mental?"Les facultés mentales n'ajoutent rien au corps. Elles changent ce que l'esprit peut percevoir, comprendre ou atteindre. Leur effet est profond, elles modifient le rapport à soi, aux autres ou à l'information plutôt que le rapport à l'espace.":"Les facultés physiques agissent directement sur le corps : ce qu'il peut porter, à quelle vitesse il se déplace, jusqu'où il peut aller ou à quel point il peut rester hors de vue. Elles se ressentent tout de suite, dans le geste, avant même de se penser.";
+  const options=mental?[{name:'Télépathie',icon:EyeOff},{name:'Contrôle des rêves',icon:Dumbbell},{name:'Maîtrise d’une langue',icon:Zap}]:powerOptions.slice(0,3);
+  const selected=mental?'Super Cognition':power;
+  const details=mental?"La super cognition, ce n'est pas simplement être plus intelligent, c'est voir immédiatement les liens qu'il faudrait normalement chercher, traiter en une fraction de seconde ce qui prend d'ordinaire plusieurs détours de raisonnement.":"Voler, ce n'est pas seulement s'élever, c'est gagner un axe entier de liberté, voir un lieu depuis un angle qu'aucun escalier ni aucune fenêtre ne permet, franchir un obstacle en l'ignorant plutôt qu'en le contournant.";
+  return <main><section className="intro"><h1>{title}</h1><p>{description}</p>{<div className="switchline"><span>Faculté physique</span><button aria-label="changer de faculté" onClick={()=>setMental(!mental)} className={'switch '+(mental?'on':'')}><span/></button><span>Faculté mentale</span></div>}</section>
+  <section className="workspace"><div className="left-stage"><Capsule/><div className="choice-row"><button className="arrow"><ArrowLeft size={20}/></button>{options.map(({name,icon:Icon})=><button key={name} className="choice-card" onClick={()=>!mental&&setPower(name)}><Icon size={24}/><span>{name}</span></button>)}<button className="arrow"><ArrowRight size={20}/></button></div></div><div className="detail-card"><div className="detail-top"><div className="eyebrow">FACULTÉ SÉLECTIONNÉE</div><div className="title-code"><h2>{selected}</h2><span>{mental?'Co':'Vo'}</span></div><p>{details}</p></div><div className="detail-bottom"><div><h3>Effets secondaires</h3><p>{mental?'Migraine':'Paralysie momentanée'}</p></div><div><h3>Contre-indication</h3><p>{mental?'Troubles anxieux généralisés ou TOC':'Antécédents de troubles cardiaques'}</p><p>Grossesse et allaitement, conduite de véhicule, prise d’une autre formule dans les 24h</p></div><button className="primary next" onClick={onNext}>Continuer <ArrowRight size={16}/></button></div></div></section></main>
+}
+function ChoiceScreen({title,description,options,selected,setSelected,cardTitle,cardName,cardCode,cardText,onBack,onNext}:{kind:string,title:string,description:string,options:string[],selected:string,setSelected:(v:string)=>void,cardTitle:string,cardName:string,cardCode:string,cardText:string,onBack:()=>void,onNext:()=>void}){return <main><section className="intro"><h1>{title}</h1><p>{description}</p></section><section className="workspace"><div className="left-stage"><Capsule/><div className="choice-row"><button className="arrow"><ArrowLeft size={20}/></button>{options.map((name,i)=><button key={name} className={'choice-card'+(selected===name?' selected':'')} onClick={()=>setSelected(name)}>{i===0?<EyeOff size={24}/>:i===1?<Dumbbell size={24}/>:<Zap size={24}/>}<span>{name}</span></button>)}<button className="arrow"><ArrowRight size={20}/></button></div></div><div className="detail-card compact"><div className="detail-top"><div className="eyebrow">{cardTitle}</div><div className="title-code"><h2>{cardName}</h2><span>{cardCode}</span></div><p>{cardText}</p></div><div className="detail-bottom actions"><button className="secondary" onClick={onBack}><ArrowLeft size={16}/>Précédent</button><button className="primary next" onClick={onNext}>Continuer<ArrowRight size={16}/></button></div></div></section></main>}
+function DurationScreen({duration,setDuration,onBack,onNext}:{duration:string,setDuration:(v:string)=>void,onBack:()=>void,onNext:()=>void}){const opts=['1h (20mg)','12h (40mg)','24h (80mg)','72h (160mg)'];return <main><section className="intro"><h1>Durée d’action</h1><p>La durée d'action détermine le dosage : plus l'effet doit durer longtemps, plus la concentration en principe actif doit être importante. Un effet court se contente d'une dose légère et un effet long demande une dose plus forte.</p></section><section className="workspace"><div className="left-stage duration"><Capsule/><div className="slider-label">Durée d’effet</div><div className="slider"><span/></div><div className="slider-value">{duration}</div></div><div className="detail-card compact"><div className="detail-top"><div className="eyebrow">DURÉE D’ACTION CHOISIE</div><div className="title-code"><h2>{duration} <em>(20mg)</em></h2></div><p>À 20 mg, on est sur le dosage le plus léger de la gamme, calibré pour ne tenir qu'une heure. C'est la dose minimale efficace : juste assez pour produire un effet net sur une fenêtre courte.</p><div className="option-grid">{opts.map(o=><button className={(o.startsWith(duration)?'selected-btn':'')} onClick={()=>setDuration(o.split(' ')[0])} key={o}>{o}</button>)}</div></div><div className="detail-bottom actions"><button className="secondary" onClick={onBack}><ArrowLeft size={16}/>Précédent</button><button className="primary next" onClick={onNext}>Continuer<ArrowRight size={16}/></button></div></div></section></main>}
+function QuantityScreen({quantity,setQuantity,onBack,onNext}:{quantity:string,setQuantity:(v:string)=>void,onBack:()=>void,onNext:()=>void}){const opts=['Unique','Lot de 5','Lot de 10','Lot de 30'];return <main><section className="intro"><h1>Quantité</h1><p>La durée d'action détermine le dosage : plus l'effet doit durer longtemps, plus la concentration en principe actif doit être importante. Un effet court se contente d'une dose légère et un effet long demande une dose plus forte.</p></section><section className="workspace"><div className="left-stage"><Capsule/></div><div className="detail-card compact"><div className="detail-top"><div className="eyebrow">DURÉE D’ACTION CHOISIE</div><div className="title-code"><h2>1h <em>(20mg)</em></h2></div><p>À 20 mg, on est sur le dosage le plus léger de la gamme, calibré pour ne tenir qu'une heure. C'est la dose minimale efficace : juste assez pour produire un effet net sur une fenêtre courte.</p><div className="option-grid">{opts.map(o=><button className={quantity===o?'selected-btn':''} onClick={()=>setQuantity(o)} key={o}>{o}</button>)}</div></div><div className="detail-bottom actions"><button className="secondary" onClick={onBack}><ArrowLeft size={16}/>Précédent</button><button className="primary next" onClick={onNext}>Continuer<ArrowRight size={16}/></button></div></div></section></main>}
+function Recap({power,emotion,admin,duration,quantity}:{power:string,emotion:string,admin:string,duration:string,quantity:string}){return <main className="recap"><section className="intro"><h1>Récapitulatif</h1><p>Votre formule est prête. Retrouvez ci-dessous l’ensemble de vos choix.</p></section><section className="recap-card"><div className="recap-visual"><Capsule/><div className="pill-name">Vo · Co · Ge · Xy</div></div><div className="recap-data">{[['Pouvoir',power],['Émotion',emotion],['Administration',admin],['Durée',duration],['Quantité',quantity]].map(([k,v])=><div className="recap-row" key={k}><span>{k}</span><strong>{v}</strong></div>)}<div className="price">49 €</div><button className="primary pay">Passer au paiement <ChevronRight size={16}/></button></div></section></main>}
+export default App;
