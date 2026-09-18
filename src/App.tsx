@@ -172,7 +172,7 @@ function Capsule({hero=false,glow=false}:{hero?:boolean,glow?:boolean}){
   const isCognition=faculty?.image===cognitionCapsule;
   const isTelepathie=faculty?.image===telepathie;
   const isVitesse=faculty?.image===vitesse;
-  const cognitionFill:Record<string,string>={'1h':'/assets/cognition-quarter.png','12h':cognition12,'24h':cognition24,'72h':cognitionCapsule};
+  const cognitionFill:Record<string,string>={'1h':`${import.meta.env.BASE_URL}assets/cognition-quarter.png`,'12h':cognition12,'24h':cognition24,'72h':cognitionCapsule};
   const isCognitionWide=isCognition && (choices[3]==='12h'||choices[3]==='24h');
   const source=legacyPresentation?adminImages[choices[2]]:isCognition?(cognitionFill[choices[3]]||cognitionCapsule):faculty?.image||capsule;
   return <div className={'capsule-wrap'+(hero?' hero':'')+(glow && Boolean(choices[1])?' has-glow':'')}><img src={source} className={'capsule'+(legacyPresentation?' administration-image':'')+(isCognition?(isCognitionWide?' cognition-wide-image':' cognition-image'):'')+(isTelepathie?' telepathie-image':'')+(isVitesse?' vitesse-image':'')} style={legacyPresentation?{aspectRatio:choices[2]==='Suppositoire'?'3 / 2':'6 / 5',objectFit:'contain'}:undefined} alt={faculty?`Pilule — ${faculty.name}`:'Pilule FormuLab'}/></div>;
