@@ -9,8 +9,8 @@ import { type ComponentType, createContext, useContext, useEffect, useMemo, useS
 import { flushSync } from 'react-dom';
 import { ArrowLeft, ArrowRight, Dumbbell, EyeOff, Zap, ChevronRight, Brain, Activity, ShieldAlert, Pill, Circle, Bandage, Droplet, Focus, Armchair, BicepsFlexed, Hourglass, Sparkles, Flame } from 'lucide-react';
 
-const capsule='/assets/capsule.png';
-const cognitionCapsule='/assets/super-cognition.png';
+const capsule=`${import.meta.env.BASE_URL}assets/capsule.png`;
+const cognitionCapsule=`${import.meta.env.BASE_URL}assets/super-cognition.png`;
 function Wing({size=24}:{size?:number}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 20c1-6 4-9 9-11 4-2 6-4 9-7 0 7-3 15-10 17H7"/><path d="m7 17 8-7M10 18l7-5M13 17l5-2"/></svg>}
 function TelepathyIcon({size=24}:{size?:number}){return <svg width={size} height={size} viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 28v-6C0 19 1 10 6 9c4-1 6 2 6 5l2 4-3 1v4H7v5M29 28v-6c3-3 2-12-3-13-4-1-6 2-6 5l-2 4 3 1v4h4v5"/><path d="M13 6q3-3 6 0M14 10q2-2 4 0M11 3q5-4 10 0"/></svg>}
 function LanguageIcon({size=24}:{size?:number}){return <svg width={size} height={size} viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 29v-6C0 19 1 9 7 8c4 0 6 3 6 6l3 4-4 1v4H8v6M17 16l3-2M18 20l3 1"/><text x="20" y="11" fill="currentColor" stroke="none" fontSize="10" fontFamily="sans-serif">A</text><text x="24" y="24" fill="currentColor" stroke="none" fontSize="9" fontFamily="sans-serif">B</text></svg>}
